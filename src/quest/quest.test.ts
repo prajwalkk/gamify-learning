@@ -167,21 +167,41 @@ function news(feeds: NewsCache["feeds"]): NewsCache {
   return { fetchedAt: new Date().toISOString(), selection: "", feeds };
 }
 
-test("today's reading: a curated paper for the track wins; otherwise rotate across feeds", () => {
-  const s = state({ feeds: ["daily-papers", "lilian-weng", "bair", "hacker-news"] });
-  const fresh = new Date(Date.parse(`${MON}T08:00:00`)).toISOString();
+test("today's reading: the curated daily paper for the track wins; otherwise rotate across feeds", () => {
+  const s = state({ feeds: ["fanout-daily", "lilian-weng", "bair", "hacker-news"] });
+  const fresh = new Date(Date.parse(`${MON}T12:00:00Z`)).toISOString();
   const n = news({
-    "daily-papers": { ok: true, items: [{ title: "Scaling laws for agents", url: "https://p/agents", date: fresh }, { title: "A new optimizer", url: "https://p/opt", date: fresh }] },
+    "fanout-daily": { ok: true, items: [{ title: "GShard", url: "https://p/gshard", date: fresh, categories: ["Systems"] }, { title: "A new optimizer", url: "https://p/opt", date: fresh, categories: ["AI Research"] }] },
     "lilian-weng": { ok: true, items: [{ title: "Diffusion", url: "https://l/1", date: fresh }] },
     bair: { ok: true, items: [{ title: "Robots", url: "https://b/1", date: fresh }] },
   });
   assert.equal(pickReading(s, n, "ml", MON)?.url, "https://p/opt");
+  assert.equal(pickReading(s, n, "system-design", MON)?.url, "https://p/gshard");
   assert.equal(inferTrack({ title: "Scaling laws for agents", url: "" }), "ai-dev");
   s.readingsDone.push("https://p/opt");
   const a = pickReading(s, n, "ml", MON)!;
   const b = pickReading(s, n, "ml", addDays(MON, 1))!;
   assert.equal(a.pickedBy, "rotation");
   assert.notEqual(a.feedId, b.feedId);
+});
+
+test("an item's category decides its track: Fanout blog posts join the right day's rotation", () => {
+  const s = state({ feeds: ["fanout-blog", "bytebytego"] });
+  const n = news({
+    "fanout-blog": { ok: true, items: [{ title: "Size vLLM KV cache bytes", url: "https://f/kv", categories: ["Inference engineering"] }, { title: "What is fan-out?", url: "https://f/fan", categories: ["System design"] }] },
+    bytebytego: { ok: true, items: [{ title: "Caching 101", url: "https://b/1" }] },
+  });
+  assert.equal(pickReading(s, n, "ai-dev", MON)?.url, "https://f/kv");
+  const sd = [MON, addDays(MON, 1)].map((d) => pickReading(s, n, "system-design", d)?.url).sort();
+  assert.deepEqual(sd, ["https://b/1", "https://f/fan"]);
+  assert.equal(pickReading(s, n, "ml", MON), undefined);
+});
+
+test("a state from before Fanout: the stand-in feed is replaced by Fanout's two", () => {
+  const root = tmpVault();
+  fs.mkdirSync(path.join(root, "Learning", ".quest"), { recursive: true });
+  fs.writeFileSync(path.join(root, "Learning", ".quest", "state.json"), JSON.stringify({ ...freshState(), feeds: ["daily-papers", "bair"] }));
+  assert.deepEqual(loadState(root).feeds, ["fanout-daily", "fanout-blog", "bair"]);
 });
 
 test("headlines: headline-only feeds first, at most 2 per source, up to 5", () => {

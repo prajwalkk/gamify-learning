@@ -13,6 +13,8 @@ export interface RawItem {
   link: string;
   summary: string;
   date?: number; // epoch ms, undefined if the source gives none
+  /** The item's <category> values, when the feed gives any */
+  categories?: string[];
 }
 
 export interface FetchOptions {
@@ -122,12 +124,17 @@ function toItems(feed: Awaited<ReturnType<typeof parseXml>>): RawItem[] {
     const summary = stripHtml(raw).replace(/^arXiv:\S+\s+Announce Type:\s*\S+\s*Abstract:\s*/i, "");
     const link = stripTracking(item.link ?? "");
     const title = stripHtml(item.title ?? "") || "(untitled)";
+    const categories = (item.categories ?? [])
+      .map((c: unknown) => (typeof c === "string" ? c : (c as { _?: string })?._ ?? ""))
+      .map((c: string) => c.trim())
+      .filter(Boolean);
     out.push({
       guid: item.guid || link || title,
       title,
       link,
       summary: summary.slice(0, 400),
       date: parseDate(item.isoDate, item.pubDate),
+      categories: categories.length ? categories : undefined,
     });
   }
   return out;

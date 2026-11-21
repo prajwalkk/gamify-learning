@@ -92,6 +92,11 @@ export function loadState(root: string): QuestState {
     throw new Error(`Learning/.quest/state.json is unreadable (${(e as Error).message}). Fix or restore it from Learning/.quest/backups/.`);
   }
   const base = freshState();
+  // Feeds renamed or replaced since the state was written
+  const RENAMED: Record<string, string[]> = { "daily-papers": ["fanout-daily", "fanout-blog"] };
+  if (raw.feeds?.some((f) => f in RENAMED)) {
+    raw.feeds = [...new Set(raw.feeds.flatMap((f) => RENAMED[f] ?? [f]))];
+  }
   return {
     ...base,
     ...raw,

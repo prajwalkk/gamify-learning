@@ -12,7 +12,7 @@ The top-level [README](../README.md) is the quick start. There is one page per f
 | [The daily session](features/daily-session.md) | `/quest`: kickoff, reading and quiz, goal block, close | `get_today`, `log_session` |
 | [Goals, plan and leaves](features/goals-and-plan.md) | Goals and units, the starter library, the scheduler, risk, rollover, leaves | `list_library`, `add_library_goal`, `add_goal`, `update_goal`, `get_board`, `add_leave`, `remove_leave` |
 | [XP, streaks, levels and badges](features/game.md) | The game layer | — |
-| [Daily reading and feeds](features/feeds.md) | The 36-feed catalog, picking the reading and headlines, fetching and caching | `list_feeds`, `set_feeds`, `refresh_news` |
+| [Daily reading and feeds](features/feeds.md) | The 37-feed catalog, picking the reading and headlines, fetching and caching | `list_feeds`, `set_feeds`, `refresh_news` |
 | [Notes](features/notes.md) | Every file written to your notes folder, and how writes stay safe | — |
 | [Settings](features/settings.md) | Cap, blocks, study days, rotation, leave behavior, style, paths | `set_config` |
 | [Today's quest in Claude Code](features/claude-code-mod.md) | The pane, band and status chip in every session | — |

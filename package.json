@@ -1,6 +1,6 @@
 {
   "name": "learning-quest",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Learning Quest: a calm, gamified daily learning habit for Claude Code, kept as Markdown in your Obsidian vault",
   "main": "dist/index.js",
   "scripts": {

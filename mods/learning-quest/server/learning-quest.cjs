@@ -28532,6 +28532,10 @@ function loadState(root2) {
     throw new Error(`Learning/.quest/state.json is unreadable (${e.message}). Fix or restore it from Learning/.quest/backups/.`);
   }
   const base = freshState();
+  const RENAMED = { "daily-papers": ["fanout-daily", "fanout-blog"] };
+  if (raw.feeds?.some((f) => f in RENAMED)) {
+    raw.feeds = [...new Set(raw.feeds.flatMap((f) => RENAMED[f] ?? [f]))];
+  }
   return {
     ...base,
     ...raw,
@@ -29087,12 +29091,14 @@ function toItems(feed) {
     const summary = stripHtml(raw).replace(/^arXiv:\S+\s+Announce Type:\s*\S+\s*Abstract:\s*/i, "");
     const link = stripTracking(item.link ?? "");
     const title = stripHtml(item.title ?? "") || "(untitled)";
+    const categories = (item.categories ?? []).map((c) => typeof c === "string" ? c : c?._ ?? "").map((c) => c.trim()).filter(Boolean);
     out.push({
       guid: item.guid || link || title,
       title,
       link,
       summary: summary.slice(0, 400),
-      date: parseDate(item.isoDate, item.pubDate)
+      date: parseDate(item.isoDate, item.pubDate),
+      categories: categories.length ? categories : void 0
     });
   }
   return out;
@@ -29152,9 +29158,19 @@ function slugTitle(link) {
 }
 
 // src/quest/feeds.ts
+var FANOUT_TRACKS = {
+  "ai research": "ml",
+  "ml math": "ml",
+  "ml mathematics": "ml",
+  systems: "system-design",
+  "system design": "system-design",
+  inference: "ai-dev",
+  "inference engineering": "ai-dev"
+};
 var FEEDS = [
-  // Curated papers (stands in for Fanout until its feed URL is known)
-  { id: "daily-papers", name: "Daily AI Papers (Hugging Face trending, TL;DR)", url: "https://papers.takara.ai/api/feed", group: "Curated papers", track: "ml", role: "reading", volume: "high", defaultOn: true, curated: true },
+  // Curated papers: Fanout's daily paper and blog; each item's category decides its track
+  { id: "fanout-daily", name: "Fanout Daily papers", url: "https://fanout.sh/feed.xml", group: "Curated papers", track: "ml", role: "reading", volume: "medium", defaultOn: true, curated: true, categoryTracks: FANOUT_TRACKS },
+  { id: "fanout-blog", name: "Fanout blog", url: "https://fanout.sh/blog/feed.xml", group: "Curated papers", track: "ml", role: "reading", volume: "medium", defaultOn: true, categoryTracks: FANOUT_TRACKS },
   // AI dev
   { id: "claude-dev", name: "claude.dev", url: "https://claude.dev/rss.xml", group: "AI dev", track: "ai-dev", role: "reading", volume: "low", defaultOn: true },
   { id: "anthropic-engineering", name: "Anthropic Engineering", url: "https://www.anthropic.com/engineering", group: "AI dev", track: "ai-dev", role: "reading", volume: "low", defaultOn: true, linkPattern: "^https://www\\.anthropic\\.com/(engineering|research)/[a-z0-9-]+$" },
@@ -29222,7 +29238,8 @@ var toNews = (i) => ({
   title: i.title,
   url: i.link,
   date: i.date ? new Date(i.date).toISOString() : void 0,
-  summary: i.summary ? i.summary.slice(0, 280) : void 0
+  summary: i.summary ? i.summary.slice(0, 280) : void 0,
+  categories: i.categories
 });
 async function refreshNews(root2, state) {
   const prev = loadNews(root2);
@@ -29250,6 +29267,15 @@ var TRACK_WORDS = [
   ["ai-dev", /\b(agent|agents|agentic|tool[- ]use|coding assistant|code generation|software engineering|prompt|rag|retrieval-augmented|llm app|benchmark for (llm|agent)s?)\b/i],
   ["system-design", /\b(distributed|serving|inference system|throughput|latency|database|storage|kv[- ]cache|scheduling|cluster|systems?)\b/i]
 ];
+function itemTrack(f, item) {
+  if (f.categoryTracks) {
+    for (const c of item.categories ?? []) {
+      const t = f.categoryTracks[c.toLowerCase()];
+      if (t) return t;
+    }
+  }
+  return f.curated ? inferTrack(item) : f.track;
+}
 function inferTrack(item) {
   const text = item.title;
   for (const [track, re] of TRACK_WORDS) if (re.test(text)) return track;
@@ -29262,11 +29288,11 @@ function pickReading(state, news, track, day) {
   const dayMs = parseDay(day).getTime();
   for (const f2 of selected.filter((f3) => f3.curated)) {
     const fresh = (news.feeds[f2.id]?.items ?? []).find(
-      (i) => !read.has(i.url) && inferTrack(i) === track && i.date && dayMs - Date.parse(i.date) < 1.5 * 864e5
+      (i) => !read.has(i.url) && itemTrack(f2, i) === track && i.date && Math.abs(dayMs - Date.parse(i.date)) < 1.5 * 864e5
     );
     if (fresh) return { title: fresh.title, url: fresh.url, source: f2.name, feedId: f2.id, track, summary: fresh.summary, pickedBy: "curated" };
   }
-  const candidates = selected.filter((f2) => !f2.curated && f2.track === track).map((f2) => ({ f: f2, item: (news.feeds[f2.id]?.items ?? []).find((i) => !read.has(i.url)) })).filter((c) => !!c.item).sort((a, b) => a.f.id.localeCompare(b.f.id));
+  const candidates = selected.filter((f2) => !f2.curated && (f2.categoryTracks || f2.track === track)).map((f2) => ({ f: f2, item: (news.feeds[f2.id]?.items ?? []).find((i) => !read.has(i.url) && itemTrack(f2, i) === track) })).filter((c) => !!c.item).sort((a, b) => a.f.id.localeCompare(b.f.id));
   if (!candidates.length) return void 0;
   const turn = Math.abs(daysBetween("2026-01-01", day)) % candidates.length;
   const { f, item } = candidates[turn];
@@ -30090,7 +30116,7 @@ async function setConfig(input) {
 }
 
 // src/index.ts
-var VERSION = "1.0.0";
+var VERSION = "1.0.1";
 var server = new McpServer(
   { name: "learning-quest", version: VERSION },
   {

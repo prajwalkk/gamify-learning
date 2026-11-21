@@ -1,6 +1,6 @@
 # Daily reading and feeds
 
-Each study day gets one 10-minute reading for that day's track, picked from your feeds, plus a few headlines. 36 feeds are in the catalog, each with a track, a role (reading, or headlines only), a volume rating, and a default on/off.
+Each study day gets one 10-minute reading for that day's track, picked from your feeds, plus a few headlines. 37 feeds are in the catalog, each with a track, a role (reading, or headlines only), a volume rating, and a default on/off.
 
 ## Using it
 
@@ -11,7 +11,7 @@ Each study day gets one 10-minute reading for that day's track, picked from your
 
 | Group | Feeds |
 |---|---|
-| Curated papers | Daily AI Papers (Hugging Face trending, with TL;DRs): each paper's subject decides its track |
+| Curated papers | [Fanout](https://fanout.sh) Daily papers and the Fanout blog: each item's category decides its track (AI Research and ML Math → ML, Systems and System design → system design, Inference and Inference engineering → AI dev) |
 | AI dev | claude.dev, Anthropic Engineering (no feed: its page is scraped), OpenAI Engineering, Simon Willison, Latent Space |
 | Languages *(off by default)* | This Week in Rust, Rust Blog, Go Blog, Python Insider |
 | ML explainers | Lilian Weng, Ahead of AI (Raschka), Chip Huyen |
@@ -21,14 +21,14 @@ Each study day gets one 10-minute reading for that day's track, picked from your
 | System design, internals | Martin Kleppmann, Julia Evans, Dan Luu, Daniel Lemire, Eli Bendersky |
 | News, headlines only | Hacker News front page (300+ points), Lobsters, Ars Technica *(off)* |
 
-The original design's **Fanout** daily papers and blog aren't in yet: their feed URL is still needed. The Hugging Face daily-papers feed fills the curated role meanwhile. "OpenAI Developers" is the OpenAI *Engineering* feed, because the developers feed hasn't posted in months.
+"OpenAI Developers" is the OpenAI *Engineering* feed, because the developers feed hasn't posted in months.
 
 ## Picking
 
 - **Today's reading:**
   1. Only reading-role items for today's track that you haven't read yet.
-  2. If a curated feed has a paper for the track from the last day, it wins.
-  3. Otherwise take the newest unread item from each matching feed, rotating between feeds by date, so one busy feed doesn't win every day.
+  2. If Fanout's daily paper (from the last day) is for today's track, it wins.
+  3. Otherwise take the newest unread item for the track from each feed, rotating between feeds by date, so one busy feed doesn't win every day. Fanout blog posts take part under their category's track.
 
   The pick is stored for the day, so it doesn't change when feeds refresh.
 - **Headlines:** up to 5, headline-only feeds first, at most 2 per source, skipping anything you've read or that's a reading pick. The kickoff shows 2.
@@ -60,4 +60,5 @@ Under that sits the robust fetcher (`src/fetcher.ts`):
 
 ## Limitations
 
-- A curated paper's track is guessed from its title's keywords (not the summary, which mentions too much): agents, tool use, coding → AI dev; serving, distributed, databases → system design; everything else ML.
+- Inference engineering is filed under AI dev so Fridays get Fanout material; change `FANOUT_TRACKS` in `src/quest/feeds.ts` to move it to system design.
+- An item with no category in a curated feed falls back to title keywords (agents, tool use, coding → AI dev; serving, distributed, databases → system design; else ML).

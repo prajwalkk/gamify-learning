@@ -17,16 +17,29 @@ export interface QuestFeed {
   /** Roughly how many items a week */
   volume: "low" | "medium" | "high";
   defaultOn: boolean;
-  /** Curated daily paper feed: its day's paper wins, and each item's subject decides its track */
+  /** Curated daily paper feed: its day's paper wins when it matches the day's track */
   curated?: boolean;
+  /** Item category (lowercase) → track; an item's category decides its track */
+  categoryTracks?: Record<string, TrackId>;
   /** Feed has no RSS: scrape article links matching this pattern from its page */
   linkPattern?: string;
 }
 
+const FANOUT_TRACKS: Record<string, TrackId> = {
+  "ai research": "ml",
+  "ml math": "ml",
+  "ml mathematics": "ml",
+  systems: "system-design",
+  "system design": "system-design",
+  inference: "ai-dev",
+  "inference engineering": "ai-dev",
+};
+
 // Every URL here was checked with the production fetcher; `npm run verify-feeds` re-checks.
 export const FEEDS: QuestFeed[] = [
-  // Curated papers (stands in for Fanout until its feed URL is known)
-  { id: "daily-papers", name: "Daily AI Papers (Hugging Face trending, TL;DR)", url: "https://papers.takara.ai/api/feed", group: "Curated papers", track: "ml", role: "reading", volume: "high", defaultOn: true, curated: true },
+  // Curated papers: Fanout's daily paper and blog; each item's category decides its track
+  { id: "fanout-daily", name: "Fanout Daily papers", url: "https://fanout.sh/feed.xml", group: "Curated papers", track: "ml", role: "reading", volume: "medium", defaultOn: true, curated: true, categoryTracks: FANOUT_TRACKS },
+  { id: "fanout-blog", name: "Fanout blog", url: "https://fanout.sh/blog/feed.xml", group: "Curated papers", track: "ml", role: "reading", volume: "medium", defaultOn: true, categoryTracks: FANOUT_TRACKS },
   // AI dev
   { id: "claude-dev", name: "claude.dev", url: "https://claude.dev/rss.xml", group: "AI dev", track: "ai-dev", role: "reading", volume: "low", defaultOn: true },
   { id: "anthropic-engineering", name: "Anthropic Engineering", url: "https://www.anthropic.com/engineering", group: "AI dev", track: "ai-dev", role: "reading", volume: "low", defaultOn: true, linkPattern: "^https://www\\.anthropic\\.com/(engineering|research)/[a-z0-9-]+$" },
@@ -82,6 +95,7 @@ export interface NewsItem {
   url: string;
   date?: string; // ISO
   summary?: string;
+  categories?: string[];
 }
 
 export interface NewsCache {
@@ -116,6 +130,7 @@ const toNews = (i: RawItem): NewsItem => ({
   url: i.link,
   date: i.date ? new Date(i.date).toISOString() : undefined,
   summary: i.summary ? i.summary.slice(0, 280) : undefined,
+  categories: i.categories,
 });
 
 /** Fetch every selected feed in parallel (10s each at most). Keeps the last good items of a feed that fails. */
@@ -149,7 +164,18 @@ const TRACK_WORDS: [TrackId, RegExp][] = [
   ["system-design", /\b(distributed|serving|inference system|throughput|latency|database|storage|kv[- ]cache|scheduling|cluster|systems?)\b/i],
 ];
 
-/** A curated paper's track comes from its title (summaries mention too much); anything else is ML. */
+/** An item's track: its category when the feed maps categories, else (curated feeds) its title, else the feed's. */
+export function itemTrack(f: QuestFeed, item: NewsItem): TrackId | "news" {
+  if (f.categoryTracks) {
+    for (const c of item.categories ?? []) {
+      const t = f.categoryTracks[c.toLowerCase()];
+      if (t) return t;
+    }
+  }
+  return f.curated ? inferTrack(item) : f.track;
+}
+
+/** Track from title keywords (summaries mention too much); anything else is ML. */
 export function inferTrack(item: NewsItem): TrackId {
   const text = item.title;
   for (const [track, re] of TRACK_WORDS) if (re.test(text)) return track;
@@ -169,14 +195,14 @@ export function pickReading(state: QuestState, news: NewsCache | undefined, trac
   const dayMs = parseDay(day).getTime();
   for (const f of selected.filter((f) => f.curated)) {
     const fresh = (news.feeds[f.id]?.items ?? []).find(
-      (i) => !read.has(i.url) && inferTrack(i) === track && i.date && dayMs - Date.parse(i.date) < 1.5 * 864e5
+      (i) => !read.has(i.url) && itemTrack(f, i) === track && i.date && Math.abs(dayMs - Date.parse(i.date)) < 1.5 * 864e5
     );
     if (fresh) return { title: fresh.title, url: fresh.url, source: f.name, feedId: f.id, track, summary: fresh.summary, pickedBy: "curated" };
   }
 
   const candidates = selected
-    .filter((f) => !f.curated && f.track === track)
-    .map((f) => ({ f, item: (news.feeds[f.id]?.items ?? []).find((i) => !read.has(i.url)) }))
+    .filter((f) => !f.curated && (f.categoryTracks || f.track === track))
+    .map((f) => ({ f, item: (news.feeds[f.id]?.items ?? []).find((i) => !read.has(i.url) && itemTrack(f, i) === track) }))
     .filter((c): c is { f: QuestFeed; item: NewsItem } => !!c.item)
     .sort((a, b) => a.f.id.localeCompare(b.f.id));
   if (!candidates.length) return undefined;

@@ -28,7 +28,7 @@ This is enforced by `scripts/check-docs.mjs`:
 
 - `src/index.ts`: MCP server, `instructions`, the 16 tools (`tool(name, description, schema, fn)`)
 - `src/quest/api.ts`: tool handlers; every change goes through `mutate()`, then `refreshOutputs()` redraws the Quest Board, `today.json` and the daily-note section
-- `src/quest/types.ts` (data model, defaults) · `dates.ts` · `scheduler.ts` (plan, deadlines, risk, rollover) · `game.ts` (XP, streak, level, badges) · `library.ts` (starter goals) · `feeds.ts` (36-feed catalog, news cache, picking) · `today.ts` (`computeToday`) · `notes.ts` (all note writing) · `store.ts` (notes folder, lock, atomic writes, backups)
+- `src/quest/types.ts` (data model, defaults) · `dates.ts` · `scheduler.ts` (plan, deadlines, risk, rollover) · `game.ts` (XP, streak, level, badges) · `library.ts` (starter goals) · `feeds.ts` (37-feed catalog, news cache, picking) · `today.ts` (`computeToday`) · `notes.ts` (all note writing) · `store.ts` (notes folder, lock, atomic writes, backups)
 - `src/fetcher.ts`: robust RSS/Atom fetching, XML repair, scraping
 - `mods/learning-quest/`: the plugin: `.mcp.json` (bundled server), `skills/learning-quest/SKILL.md` (the coach), `commands/quest.md` (`/quest`), `hooks/register.tsx` (pane, band, status chip; reads `Learning/.quest/today.json` only). Bump its `plugin.json` version for every change people should receive.
 - `.claude-plugin/marketplace.json`: this repo is the plugin's marketplace
@@ -41,5 +41,5 @@ This is enforced by `scripts/check-docs.mjs`:
 - Dates are local `YYYY-MM-DD`; date arithmetic goes through local noon.
 - The daily-note section is regenerated: no checkboxes there (a tick would be lost).
 - The notes folder comes from `LEARNING_QUEST_DIR` → `~/.config/learning-quest/config.json` → `~/LearningQuest`. The Windows app and WSL have separate home folders, so separate shared configs.
-- Fanout (the original design's curated paper feed) isn't in the catalog yet: its URL is unknown. `daily-papers` (Hugging Face trending) fills the curated role.
+- Fanout (`fanout-daily`, `fanout-blog`) items carry a `<category>` that decides their track (`FANOUT_TRACKS`). The old `daily-papers` stand-in id is migrated in `loadState`.
 - The repo is public: never commit vault paths, names, emails, or personal config.
