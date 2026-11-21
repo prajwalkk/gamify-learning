@@ -4,6 +4,10 @@ Newest first. One line per user-visible change, with a link to the feature page.
 
 ## Unreleased
 
+## 1.0.2
+
+- [Feeds](features/feeds.md): a Game dev group (Red Blob Games, Gaffer On Games, GameFromScratch, Bevy, Godot, Factorio Friday Facts, Aras Pranckevičius, and Game Developer as headlines), off by default, so a quest can read game dev on its `game-dev` days.
+
 ## 1.0.1
 
 - [Feeds](features/feeds.md): Fanout's Daily papers and blog are in, replacing the Hugging Face stand-in (37 feeds, as designed). Each item's category decides its track, and Fanout's daily paper wins on its track's day. A selection that had the stand-in switches to Fanout automatically.

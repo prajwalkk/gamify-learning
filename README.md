@@ -32,7 +32,7 @@ Then say **`/quest setup`**. Claude asks where your notes live, which goals to s
 | **Goals** | A starter library (Rust Book, Math for ML, 3Blue1Brown, Zero to Hero, DDIA, System Design Primer, LLM From Scratch) or your own, broken into units with time estimates |
 | **Scheduler** | Fits units into study days at up to 50 minutes a day, shifts for leaves, flags a goal at risk and offers one gentle option |
 | **Game** | XP (minutes up to the cap, units, quiz points, new readings, streak bonus), levels, a streak that skips weekends and leave, badges |
-| **Feeds** | 37 curated feeds, Fanout's daily papers first, across ML, AI dev, system design, languages and news: one reading a day for that day's track, plus headlines |
+| **Feeds** | 45 curated feeds, Fanout's daily papers first, across ML, AI dev, system design, game dev, languages and news: one reading a day for that day's track, plus headlines |
 | **Notes** | `Learning/Quest Board.md`, `Learning/Sessions/`, your goal notes' checkboxes and progress logs, your learning log, and a "Today's Quest" section in your daily note |
 
 Full docs: **[docs/](docs/README.md)** · [changelog](docs/CHANGELOG.md)

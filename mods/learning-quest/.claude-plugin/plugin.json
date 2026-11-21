@@ -1,6 +1,6 @@
 {
   "name": "learning-quest",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A calm, gamified daily learning habit: one sitting a day, coached by Claude, kept as Markdown in your Obsidian vault",
   "author": {
     "name": "prajwalkk"

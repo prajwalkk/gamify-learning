@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod/v3";
 import * as quest from "./quest/api.js";
 
-export const VERSION = "1.0.1";
+export const VERSION = "1.0.2";
 
 const server = new McpServer(
   { name: "learning-quest", version: VERSION },

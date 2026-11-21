@@ -18,7 +18,7 @@ Everything about the daily rhythm can be changed: the cap, the blocks, which day
 | `readingBlock` | 10 | Minutes for the daily reading |
 | `goalBlock` | 50 | Goal minutes planned per study day. Reading + goal can't exceed the cap |
 | `studyDays` | Mon–Fri (`[1,2,3,4,5]`) | Weekdays with sessions (0 = Sunday) |
-| `rotation` | Mon/Wed `ml`, Tue/Thu `system-design`, Fri `ai-dev` | Weekday → track for the reading |
+| `rotation` | Mon/Wed `ml`, Tue/Thu `system-design`, Fri `ai-dev` | Weekday → track for the reading. A track needs feeds turned on for it (e.g. the Game dev group for `game-dev`) |
 | `leaveBehavior` | `shift` | `shift` pushes active deadlines out by the leave's study days; `keep` leaves them |
 | `sessionTime` | `08:30` | When the session is meant to happen |
 | `learningStyle` | `reading` | `reading`, `video` or `exercise`: shapes the goal-block prompts |

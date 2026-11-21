@@ -1,6 +1,6 @@
 # Daily reading and feeds
 
-Each study day gets one 10-minute reading for that day's track, picked from your feeds, plus a few headlines. 37 feeds are in the catalog, each with a track, a role (reading, or headlines only), a volume rating, and a default on/off.
+Each study day gets one 10-minute reading for that day's track, picked from your feeds, plus a few headlines. 45 feeds are in the catalog, each with a track, a role (reading, or headlines only), a volume rating, and a default on/off.
 
 ## Using it
 
@@ -14,6 +14,7 @@ Each study day gets one 10-minute reading for that day's track, picked from your
 | Curated papers | [Fanout](https://fanout.sh) Daily papers and the Fanout blog: each item's category decides its track (AI Research and ML Math → ML, Systems and System design → system design, Inference and Inference engineering → AI dev) |
 | AI dev | claude.dev, Anthropic Engineering (no feed: its page is scraped), OpenAI Engineering, Simon Willison, Latent Space |
 | Languages *(off by default)* | This Week in Rust, Rust Blog, Go Blog, Python Insider |
+| Game dev *(off by default)* | Red Blob Games, Gaffer On Games (classic archive), GameFromScratch, Bevy, Godot, Factorio Friday Facts, Aras Pranckevičius; Game Developer as headlines |
 | ML explainers | Lilian Weng, Ahead of AI (Raschka), Chip Huyen |
 | ML labs | Hugging Face, Google Research, BAIR, Interconnects |
 | arXiv *(off by default)* | cs.LG, cs.CL, cs.AI, cs.DC, cs.DB |

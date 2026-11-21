@@ -28,7 +28,7 @@ This is enforced by `scripts/check-docs.mjs`:
 
 - `src/index.ts`: MCP server, `instructions`, the 16 tools (`tool(name, description, schema, fn)`)
 - `src/quest/api.ts`: tool handlers; every change goes through `mutate()`, then `refreshOutputs()` redraws the Quest Board, `today.json` and the daily-note section
-- `src/quest/types.ts` (data model, defaults) · `dates.ts` · `scheduler.ts` (plan, deadlines, risk, rollover) · `game.ts` (XP, streak, level, badges) · `library.ts` (starter goals) · `feeds.ts` (37-feed catalog, news cache, picking) · `today.ts` (`computeToday`) · `notes.ts` (all note writing) · `store.ts` (notes folder, lock, atomic writes, backups)
+- `src/quest/types.ts` (data model, defaults) · `dates.ts` · `scheduler.ts` (plan, deadlines, risk, rollover) · `game.ts` (XP, streak, level, badges) · `library.ts` (starter goals) · `feeds.ts` (45-feed catalog, news cache, picking) · `today.ts` (`computeToday`) · `notes.ts` (all note writing) · `store.ts` (notes folder, lock, atomic writes, backups)
 - `src/fetcher.ts`: robust RSS/Atom fetching, XML repair, scraping
 - `mods/learning-quest/`: the plugin: `.mcp.json` (bundled server), `skills/learning-quest/SKILL.md` (the coach), `commands/quest.md` (`/quest`), `hooks/register.tsx` (pane, band, status chip; reads `Learning/.quest/today.json` only). Bump its `plugin.json` version for every change people should receive.
 - `.claude-plugin/marketplace.json`: this repo is the plugin's marketplace

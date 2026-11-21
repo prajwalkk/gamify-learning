@@ -29182,6 +29182,15 @@ var FEEDS = [
   { id: "rust-blog", name: "Rust Blog", url: "https://blog.rust-lang.org/feed.xml", group: "Languages", track: "languages", role: "reading", volume: "low", defaultOn: false },
   { id: "go-blog", name: "Go Blog", url: "https://go.dev/blog/feed.atom", group: "Languages", track: "languages", role: "reading", volume: "low", defaultOn: false },
   { id: "python-blog", name: "Python Insider", url: "https://blog.python.org/feeds/posts/default", group: "Languages", track: "languages", role: "reading", volume: "medium", defaultOn: false },
+  // Game dev (off by default: turned on where a quest is about game dev)
+  { id: "red-blob-games", name: "Red Blob Games", url: "https://www.redblobgames.com/blog/posts.xml", group: "Game dev", track: "game-dev", role: "reading", volume: "low", defaultOn: false },
+  { id: "gaffer-on-games", name: "Gaffer On Games (classic archive)", url: "https://gafferongames.com/post/index.xml", group: "Game dev", track: "game-dev", role: "reading", volume: "low", defaultOn: false },
+  { id: "gamefromscratch", name: "GameFromScratch", url: "https://gamefromscratch.com/feed/", group: "Game dev", track: "game-dev", role: "reading", volume: "high", defaultOn: false },
+  { id: "bevy", name: "Bevy Engine", url: "https://bevy.org/atom.xml", group: "Game dev", track: "game-dev", role: "reading", volume: "low", defaultOn: false },
+  { id: "godot", name: "Godot Engine", url: "https://godotengine.org/rss.xml", group: "Game dev", track: "game-dev", role: "reading", volume: "medium", defaultOn: false },
+  { id: "factorio-fff", name: "Factorio Friday Facts", url: "https://www.factorio.com/blog/rss", group: "Game dev", track: "game-dev", role: "reading", volume: "low", defaultOn: false },
+  { id: "aras-p", name: "Aras Pranckevi\u010Dius (rendering)", url: "https://aras-p.info/atom.xml", group: "Game dev", track: "game-dev", role: "reading", volume: "low", defaultOn: false },
+  { id: "game-developer", name: "Game Developer", url: "https://www.gamedeveloper.com/rss.xml", group: "Game dev", track: "news", role: "headlines", volume: "high", defaultOn: false },
   // ML explainers
   { id: "lilian-weng", name: "Lil'Log (Lilian Weng)", url: "https://lilianweng.github.io/index.xml", group: "ML explainers", track: "ml", role: "reading", volume: "low", defaultOn: true },
   { id: "ahead-of-ai", name: "Ahead of AI (Sebastian Raschka)", url: "https://magazine.sebastianraschka.com/feed", group: "ML explainers", track: "ml", role: "reading", volume: "low", defaultOn: true },
@@ -30116,7 +30125,7 @@ async function setConfig(input) {
 }
 
 // src/index.ts
-var VERSION = "1.0.1";
+var VERSION = "1.0.2";
 var server = new McpServer(
   { name: "learning-quest", version: VERSION },
   {
