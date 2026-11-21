@@ -2,6 +2,8 @@
 
 A Claude mod (MCP server) that turns learning into a game: curated reading feeds, daily goals, XP, levels, streaks, and learning tracks. Everything you log is written to your own Obsidian vault. It works in Claude Code (terminal) and the Claude desktop app. There are no API keys, because Claude is the brain.
 
+**Full docs:** [docs/](docs/README.md), with one page per feature and a [changelog](docs/CHANGELOG.md).
+
 ## Setup
 
 Needs Node.js 18+.

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Blocks commits that change src/ without updating docs/. See CLAUDE.md.
+exec node scripts/check-docs.mjs --commit "$1"

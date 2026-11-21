@@ -7,7 +7,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "verify-feeds": "node dist/scripts/verify-catalog.js"
+    "verify-feeds": "node dist/scripts/verify-catalog.js",
+    "check-docs": "node scripts/check-docs.mjs",
+    "prepare": "node scripts/check-docs.mjs --install-hooks"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
