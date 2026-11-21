@@ -1,79 +1,50 @@
-# Setup & connecting
+# Setup
 
-Installs the server and connects it to Claude Code (terminal) and the Claude desktop app. Each person runs their own copy with their own Obsidian vault.
+Learning Quest is one Claude Code plugin. Installing it gives you the coach (`/quest`), its tools (an MCP server bundled inside the plugin), and the today pane and status chip. It works in the Claude Code desktop app and in the terminal. The only thing to install first is **Node.js 18 or newer**.
 
-## Using it
+## Install
 
-```bash
-git clone https://github.com/prajwalkk/gamify-learning.git
-cd gamify-learning
-npm install          # also installs the docs git hook
-npm run build
-cp config.example.json config.json    # Windows: copy config.example.json config.json
-```
+- **Claude Code desktop:** click **+** next to the prompt box → **Plugins** → **Add marketplace** → `prajwalkk/gamify-learning` → **Add plugin** → *learning-quest*.
+- **Terminal:**
 
-Then set `username` and `vaultPath` in `config.json`.
+  ```
+  /plugin install learning-quest --marketplace prajwalkk/gamify-learning
+  ```
 
-**Claude desktop app:** in Settings → Developer → Edit Config, add the following to `claude_desktop_config.json` (`%APPDATA%\Claude\`), then fully quit the app from the system tray and reopen it:
+  Answer `y` to add the marketplace, then pick the user scope.
 
-```json
-{
-  "mcpServers": {
-    "gamify-learning": {
-      "command": "C:\\Program Files\\nodejs\\node.exe",
-      "args": ["E:\\path\\to\\gamify-learning\\dist\\index.js"]
-    }
-  }
-}
-```
+Then say **"/quest setup"** (or just "set up Learning Quest").
 
-The tools appear under the **+** / tools menu in a chat. Logs are in `%APPDATA%\Claude\logs\mcp-server-gamify-learning.log`.
+## First run
 
-**Claude Code:**
+1. **Notes folder.** Claude calls `get_status`. If no folder is set, it asks where your notes live (your Obsidian vault: the folder containing `.obsidian`) and saves it with `set_notes_folder`.
+2. **Onboarding.** One question at a time: goals from the starter library and their order, daily cap and blocks, study days, track rotation, learning style, feeds, your learning log note and daily notes folder. Then `onboard` saves it all, `refresh_news` fetches the feeds, and on a study day the first session starts.
 
-```bash
-claude mcp add gamify-learning --scope user -- node /path/to/gamify-learning/dist/index.js
-```
+## Where the notes folder comes from
 
-**Updating:** `git pull && npm run build`, then restart the Claude app, or run `/mcp` → reconnect in Claude Code.
+The first of these that's set wins, on every machine and in every app:
 
-## Config file
+1. The `LEARNING_QUEST_DIR` environment variable
+2. The shared config `~/.config/learning-quest/config.json` (`{"notesFolder": "…"}`), written by `set_notes_folder`
+3. `~/LearningQuest`
 
-`config.json` sits next to `package.json` and is git-ignored, so it's per person. The server finds it relative to its own location, not the current working directory, because Claude Desktop starts servers from an arbitrary folder. Set `GAMIFY_CONFIG=/path/to/config.json` to override.
+Point every app on a machine at the same folder and they share one quest. Windows (`E:\Obsidian\Vault`) and WSL (`/mnt/e/Obsidian/Vault`) spellings are both accepted and converted. The Windows app and WSL each have their own home folder, so each has its own shared config; set both to the same vault.
 
-| Key | Meaning |
-|---|---|
-| `username` | Shown on the dashboard and daily notes |
-| `vaultPath` | Obsidian vault folder: the one holding `.obsidian/`, not its parent. `E:\\Obsidian` and `/mnt/e/Obsidian` both work on Windows and on WSL; they're converted automatically |
-| `sources` | Catalog source ids you subscribe to (managed by onboarding) |
-| `customFeeds` | Feeds you added that aren't in the catalog |
-| `topics` | Free-text topics you follow |
-| `interests` | Category ids chosen in onboarding |
-| `languageTrack` | Current learning track |
-| `dailyNotesFolder` | Daily notes folder inside the vault (default `Daily Notes`) |
-| `dailyTemplate` | Template for creating a missing daily note (default `Templates/Daily Note Template.md`) |
-| `learningFolder` | Where learning-log notes go (default `Learning`) |
-| `readingPerDay` | Links in a planned day (default 5) |
+## Tools
 
-Old v0.2 configs (`"feeds": [{url, name, category}]`) are migrated to `sources`/`customFeeds` the first time they're loaded.
+| Tool | What it does | Key inputs |
+|---|---|---|
+| `get_status` | Whether Learning Quest is set up, and which notes folder is in use (and where that came from) | — |
+| `set_notes_folder` | Saves the folder to the shared config | `folder` |
+| `onboard` | First-time setup: goals, cap and blocks, study days, rotation, style, feeds, learning log, daily notes | `goals` (library ids or names, in order), `dailyCap`, `readingBlock`, `goalBlock`, `studyDays`, `rotation`, `learningStyle`, `feeds`, `learningLog`, `dailyNotesFolder`, `dailyTemplate`, `sessionTime` |
 
-## The todays-reading mod
+## Working on the code
 
-The [daily reading list](daily-reading.md) shows in Claude Code through a mod, installed separately from the MCP server. It needs no configuration: it finds the vault from `~/.claude/gamify-learning.json`, which the server writes at startup.
-
-**Install** (once per machine):
-
-- **Claude Code desktop:** click **+** next to the prompt box → **Plugins** → **Add marketplace** `prajwalkk/gamify-learning` → **Add plugin** (todays-reading).
-- **Terminal:** `/plugin install todays-reading --marketplace prajwalkk/gamify-learning` (answer `y`, then pick the user scope).
-
-
-## How it works
-
-- Code: `src/index.ts` (server and tool registration), `src/config.ts` (loading, path normalization, migration)
-- The server sends MCP `instructions` on connect. These tell Claude how to run onboarding on first use and to present results readably instead of as raw JSON.
-- All tool errors are returned as tool errors (`isError`) instead of crashing the server.
+- `npm install && npm run build` compiles TypeScript (`dist/`) and bundles the server into the plugin (`mods/learning-quest/server/learning-quest.cjs`). The commit hook refuses a `src/` change without a rebuilt bundle.
+- `npm test` runs the engine's tests; `claude plugin test mods/learning-quest` runs the mod's; `npm run verify-feeds` live-checks the feed catalog.
+- Run the plugin from the working copy: `claude --plugin-dir mods/learning-quest`.
+- `dist/index.js` is the same server for the Claude desktop **chat** app (Settings → Developer → Edit Config → `mcpServers`), which has no plugins.
 
 ## Limitations
 
-- Desktop and Claude Code on the same machine share one config, cache and vault. That's intended: one person, one progress.
-- The build in `dist/` isn't committed; after cloning or pulling you must run `npm run build`.
+- Each person needs Node.js on their machine. The plugin starts its server with `node`.

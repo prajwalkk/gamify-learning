@@ -1,11 +1,13 @@
 {
   "name": "gamify-learning",
-  "owner": { "name": "prajwalkk" },
+  "owner": {
+    "name": "prajwalkk"
+  },
   "plugins": [
     {
-      "name": "todays-reading",
-      "source": "./mods/todays-reading",
-      "description": "Today's reading list from your Obsidian daily note, beside every Claude Code session"
+      "name": "learning-quest",
+      "source": "./mods/learning-quest",
+      "description": "A calm, gamified daily learning habit: one sitting a day, coached by Claude, kept as Markdown in your Obsidian vault"
     }
   ]
 }

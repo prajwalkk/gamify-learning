@@ -24,6 +24,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FEATURES = path.join(ROOT, "docs", "features");
 const INDEX = path.join(ROOT, "docs", "README.md");
 const ACK_FILE = path.join(ROOT, ".cache", "docs-ack");
+const BUNDLE = "mods/learning-quest/server/learning-quest.cjs";
 
 const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
 const inGitRepo = () => {
@@ -165,6 +166,11 @@ if (mode === "--commit") {
   if (!/\[no-docs\]/i.test(msg)) {
     const pairing = pairingProblem(stagedFiles());
     if (pairing) problems.unshift(pairing);
+  }
+  // The plugin ships a bundled copy of the server: it must move with src/
+  const staged = stagedFiles();
+  if (staged.some((f) => f.startsWith("src/") && !f.endsWith(".test.ts")) && !staged.includes(BUNDLE)) {
+    problems.unshift(`src/ changed but the plugin's server bundle (${BUNDLE}) isn't staged. Run \`npm run build\` and stage it.`);
   }
   if (problems.length) {
     console.error(["", "✖ Commit blocked by the docs check:", ...problems.map((p) => `  - ${p}`), `  ${HOW_TO_FIX}`, "  No user-visible change? Add [no-docs] to the commit message.", ""].join("\n"));

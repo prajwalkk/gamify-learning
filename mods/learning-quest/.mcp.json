@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "learning-quest": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/learning-quest.cjs"]
+    }
+  }
+}

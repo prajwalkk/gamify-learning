@@ -1,37 +1,18 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod/v3";
-import { loadConfig } from "./config.js";
-import { logLearning, logLearningSchema, getEntries, getEntriesSchema } from "./tools/learning.js";
-import { addGoal, addGoalSchema, completeGoal, completeGoalSchema, getGoals } from "./tools/goals.js";
-import { getDashboard, getLeaderboard } from "./tools/gamification.js";
-import {
-  getFeeds, getFeedsSchema, markArticleRead, markReadSchema, addFeed, addFeedSchema,
-  watchPage, watchPageSchema, removeFeed, removeFeedSchema, listFeeds, checkFeeds, checkFeedsSchema,
-  followTopic, followTopicSchema,
-} from "./tools/feeds.js";
-import { getCategories, suggestFeeds, suggestFeedsSchema, setupInterests, setupInterestsSchema } from "./tools/onboard.js";
-import { getLanguageTrack, setLanguageTrack, setLanguageTrackSchema } from "./tools/language.js";
-import { planToday, planTodaySchema } from "./tools/reading.js";
-import { READING_HEADING } from "./daily-note.js";
-import fs from "fs";
-import os from "os";
-import path from "path";
+import * as quest from "./quest/api.js";
 
-const cfg = loadConfig();
-const VERSION = "0.4.0";
+export const VERSION = "1.0.0";
 
 const server = new McpServer(
-  { name: "gamify-learning", version: VERSION },
+  { name: "learning-quest", version: VERSION },
   {
     instructions: [
-      `Gamified learning companion for ${cfg.username}. Learning notes and daily notes are written to their Obsidian vault.`,
-      "First run: if the user has no feeds (get_categories → onboarded: false), offer a short, conversational onboarding:",
-      "ask what they want to learn in their own words, call suggest_feeds with those words, confirm picks, ask about any extra topics or blogs,",
-      "then setup_interests. Unmatched topics → follow_topic; blog URLs → add_feed (auto-discovers RSS).",
-      "Each day's reading list lives in the user's Obsidian daily note (shown in Claude Code by the todays-reading mod): when they ask what to read today, or it isn't planned yet, call plan_today.",
-      "Daily use: get_dashboard + get_feeds for more reading; when they finish an article, mark_article_read; when they explain something they learned, log_learning (tags matter for tracks).",
-      "Keep feed lists short and readable: title, source, one-line why. Never dump raw JSON at the user.",
+      "Learning Quest: a calm daily learning habit, one sitting a day capped at 60 minutes (a 10-minute reading and a 50-minute goal block).",
+      "Run the daily session with the learning-quest skill (/quest). If get_status says it isn't set up, onboard first.",
+      "Coach rules: never plan past the daily cap; short messages, one step at a time; no extra reading lists or tangents;",
+      "deadlines guide, they don't whip; honest numbers, said calmly; never run git; write only through these tools.",
     ].join(" "),
   }
 );
@@ -52,62 +33,28 @@ function tool<S extends z.AnyZodObject>(name: string, description: string, schem
   server.registerTool(name, { description, inputSchema: schema }, cb as never);
 }
 
-// ── Learning & goals ──────────────────────────────────────────────────────────
-tool("log_learning", "Log something learned — earns XP and writes a note to the Obsidian vault", logLearningSchema, (i) => logLearning(cfg, i));
-tool("get_entries", "Recent learning log entries", getEntriesSchema, (i) => getEntries(cfg, i));
-tool("add_goal", "Add a learning goal for today", addGoalSchema, (i) => addGoal(cfg, i));
-tool("complete_goal", "Mark a goal done (+10 XP)", completeGoalSchema, (i) => completeGoal(cfg, i));
-tool("get_goals", "Today's goals; refreshes the Obsidian daily note", noArgs, () => getGoals(cfg));
-
-// ── Gamification ──────────────────────────────────────────────────────────────
-tool("get_dashboard", "XP, level, streak, today's goals and progress", noArgs, () => getDashboard(cfg));
-tool("get_stats", "Full stats: XP, level, streak, articles read, total entries", noArgs, () => getLeaderboard(cfg));
-
-// ── Reading ───────────────────────────────────────────────────────────────────
-tool("get_feeds", "Reading list from subscribed feeds: newest first, capped per source, articles on followed topics ranked up. Filter by category, source, keyword, or days.", getFeedsSchema, (i) => getFeeds(cfg, i));
-tool("plan_today", "Plan today's reading list into the user's Obsidian daily note (📚 Today's Reading). Carries over yesterday's unread links if that list isn't finished; otherwise picks fresh ones. Returns the existing list if today is already planned.", planTodaySchema, (i) => planToday(cfg, i));
-tool("mark_article_read", "Mark an article read (+5 XP)", markReadSchema, (i) => markArticleRead(cfg, i));
-tool("add_feed", "Subscribe to a blog — accepts a feed URL or just the homepage (RSS is auto-discovered and tested before saving)", addFeedSchema, (i) => addFeed(cfg, i));
-tool("watch_page", "Follow a site that has no RSS by scraping article links from a listing page", watchPageSchema, (i) => watchPage(cfg, i));
-tool("follow_topic", "Follow any free-text topic: adds Hacker News + arXiv searches for it and highlights matching articles across all feeds", followTopicSchema, (i) => followTopic(cfg, i));
-tool("remove_feed", "Unsubscribe from a source, custom feed, or followed topic", removeFeedSchema, (i) => removeFeed(cfg, i));
-tool("list_feeds", "List subscriptions with their last known health (no network)", noArgs, () => listFeeds(cfg));
-tool("check_feeds", "Live health check of every subscribed feed; optionally drop ones that are broken", checkFeedsSchema, (i) => checkFeeds(cfg, i));
-
-// ── Onboarding ────────────────────────────────────────────────────────────────
-tool("get_categories", "The full catalog (categories, sources with blurbs, arXiv subcategories, learning tracks) plus how to run onboarding", noArgs, () => getCategories(cfg));
-tool("suggest_feeds", "Turn the user's free-text interests into suggested categories, sources, arXiv feeds, tracks, and topics to follow", suggestFeedsSchema, (i) => suggestFeeds(cfg, i));
-tool("setup_interests", "Apply onboarding choices: categories, individual sources, arXiv subcategories, free-text topics, learning track", setupInterestsSchema, (i) => setupInterests(cfg, i));
-
-// ── Learning tracks ───────────────────────────────────────────────────────────
-tool("get_language_track", "Roadmap and progress for the current learning track (Rust, game dev, C++, C#, Go, TS, Python)", noArgs, () => getLanguageTrack(cfg));
-tool("set_language_track", "Choose a learning track — adds its feeds and starter resources", setLanguageTrackSchema, (i) => setLanguageTrack(cfg, i));
-
-/**
- * Tell the todays-reading mod where this machine's vault is: ~/.claude/gamify-learning.json.
- * Written in this platform's path form, so the Windows app and WSL each get their own.
- */
-function writeVaultPointer() {
-  try {
-    const dir = path.join(os.homedir(), ".claude");
-    fs.mkdirSync(dir, { recursive: true });
-    const pointer = {
-      vaultPath: path.resolve(cfg.vaultPath),
-      dailyNotesFolder: cfg.dailyNotesFolder,
-      readingHeading: READING_HEADING,
-      username: cfg.username,
-      writtenBy: `gamify-learning ${VERSION}`,
-    };
-    fs.writeFileSync(path.join(dir, "gamify-learning.json"), JSON.stringify(pointer, null, 2) + "\n");
-  } catch (e) {
-    console.error("gamify-learning: could not write vault pointer:", (e as Error).message);
-  }
-}
+tool("get_status", "Whether Learning Quest is set up, and which notes folder is in use", noArgs, () => quest.getStatus());
+tool("set_notes_folder", "Save the notes folder (e.g. the Obsidian vault) to the shared config, so every app on this machine uses it", quest.setNotesFolderSchema, (i) => quest.setNotesFolder(i));
+tool("list_library", "Starter goals: each with track, format, units and time estimates", noArgs, () => quest.listLibrary());
+tool("onboard", "First-time setup: goals (library ids, in study order), daily cap and blocks, study days, track rotation, learning style, feeds, learning log and daily notes", quest.onboardSchema, (i) => quest.onboard(i));
+tool("add_library_goal", "Add a goal from the starter library (check list_library first)", quest.addLibraryGoalSchema, (i) => quest.addLibraryGoal(i));
+tool("add_goal", "Add a custom goal with ordered units and time estimates. Propose the units to the user and wait for their OK before calling this", quest.addGoalSchema, (i) => quest.addGoal(i));
+tool("update_goal", "Change a goal: status, priority, deadline, note, or its units (edit, add, remove, mark done)", quest.updateGoalSchema, (i) => quest.updateGoal(i));
+tool("get_today", "Today: study day or leave, track, the reading, the goal block, minutes left, risk, headlines, streak and level, tomorrow", quest.getTodaySchema, (i) => quest.getToday(i));
+tool("get_board", "Goals with progress and projected finish dates, the next study days, leaves, recent sessions, totals", noArgs, () => quest.getBoard());
+tool("log_session", "Record a sitting: minutes, reading, units finished, where they stopped, quiz score, what they learned, a summary. Awards XP and writes the notes", quest.logSessionSchema, (i) => quest.logSession(i));
+tool("add_leave", "Add a leave (date range with no sessions); the plan and active deadlines shift", quest.addLeaveSchema, (i) => quest.addLeave(i));
+tool("remove_leave", "Remove a leave by id or start date", quest.removeLeaveSchema, (i) => quest.removeLeave(i));
+tool("list_feeds", "The feed catalog: each feed's track, role, volume and whether it's on", noArgs, () => quest.listFeeds());
+tool("set_feeds", "Save the feed selection (only saves; fetch with refresh_news)", quest.setFeedsSchema, (i) => quest.setFeeds(i));
+tool("refresh_news", "Fetch the selected feeds now (10s each at most) and update today's reading and headlines", noArgs, () => quest.refreshNewsTool());
+tool("set_config", "Change settings: daily cap, reading/goal blocks, study days, track rotation, leave behavior, session time, learning style, notes paths", quest.setConfigSchema, (i) => quest.setConfig(i));
 
 async function main() {
-  writeVaultPointer();
   await server.connect(new StdioServerTransport());
-  console.error(`gamify-learning MCP v${VERSION} running for ${cfg.username}`);
+  console.error(`learning-quest MCP v${VERSION} ready`);
+  // Every session: redraw the Quest Board, today's snapshot and daily-note section (and fetch stale news)
+  quest.startupRefresh().catch((e) => console.error("learning-quest: startup refresh failed:", (e as Error).message));
 }
 
 main().catch((err) => {

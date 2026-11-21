@@ -1,110 +1,50 @@
-# gamify-learning
+# Learning Quest
 
-A Claude mod (MCP server) that turns learning into a game: curated reading feeds, daily goals, XP, levels, streaks, and learning tracks. Everything you log is written to your own Obsidian vault. It works in Claude Code (terminal) and the Claude desktop app. There are no API keys, because Claude is the brain.
+A calm, gamified daily learning habit for Claude Code. **Discipline without overwhelm.**
 
-**Full docs:** [docs/](docs/README.md), with one page per feature and a [changelog](docs/CHANGELOG.md).
+- **One sitting a day:** one short reading and one study unit, capped at 60 minutes.
+- **Basics first:** fundamentals and intuition, with small concrete examples.
+- **Showing up counts:** a 20-minute day still keeps the streak.
+- **The plan bends, it doesn't break:** leaves and missed days shift the plan forward instead of failing you.
+- **You own the record:** everything lives as Markdown in a folder you choose, such as your Obsidian vault.
+- **Coached:** Claude suggests a reading, quizzes you on what you paste back, logs progress and moves your goals along.
 
-## Setup
+Every Claude Code session shows today's quest in a pane (desktop) or a band (terminal), with a status chip: `🟡 🔥3 · L2 · 25/60`.
 
-Needs Node.js 18+.
+## Install
 
-```bash
-git clone https://github.com/prajwalkk/gamify-learning.git
-cd gamify-learning
-npm install
-npm run build
-cp config.example.json config.json      # Windows: copy config.example.json config.json
-```
+You need **Node.js 18+**. Then add the plugin:
 
-Edit `config.json` and set your name and **your own** vault:
+- **Claude Code desktop:** **+** next to the prompt box → **Plugins** → **Add marketplace** `prajwalkk/gamify-learning` → **Add plugin** → *learning-quest*
+- **Terminal:**
 
-```json
-{ "username": "YourName", "vaultPath": "E:\\Obsidian" }
-```
+  ```
+  /plugin install learning-quest --marketplace prajwalkk/gamify-learning
+  ```
 
-Windows paths (`E:\\Obsidian`) and WSL paths (`/mnt/e/Obsidian`) both work on either side. `config.json` is git-ignored, so each person keeps their own.
+Then say **`/quest setup`**. Claude asks where your notes live, which goals to start with, and a few preferences. After that, **`/quest`** runs each day's session.
 
-### Connect: Claude desktop app (Windows)
+## What's inside
 
-Settings → Developer → Edit Config, then add the following to `claude_desktop_config.json` (`%APPDATA%\Claude\`):
-
-```json
-{
-  "mcpServers": {
-    "gamify-learning": {
-      "command": "node",
-      "args": ["C:\\path\\to\\gamify-learning\\dist\\index.js"]
-    }
-  }
-}
-```
-
-Restart the app.
-
-### Connect: Claude Code (terminal)
-
-```bash
-claude mcp add gamify-learning --scope user -- node /path/to/gamify-learning/dist/index.js
-```
-
-### Add the todays-reading mod (today's links beside every session)
-
-- **Claude Code desktop:** **+** next to the prompt box → **Plugins** → **Add marketplace** `prajwalkk/gamify-learning` → **Add plugin**
-- **Terminal:** `/plugin install todays-reading --marketplace prajwalkk/gamify-learning`
-
-See [daily reading list](docs/features/daily-reading.md).
-
-## First run
-
-Say **"set me up"**. Claude asks what you want to learn, in your own words, and suggests feeds from the catalog. You can add anything else too:
-
-- *"also follow roguelike design"* follows a topic (Hacker News + arXiv search, and highlights matching articles in all your feeds)
-- *"add https://someblog.dev"* subscribes to a blog. A homepage URL is fine, because the feed is found automatically and tested before saving.
-- *"watch https://site.com/blog"* follows a site with no RSS by reading its article links
-
-Daily: *"what should I read?"*, *"I read that"* (+5 XP), *"log what I learned about lifetimes"* (+10–40 XP), *"add a goal"*, *"show my dashboard"*.
-
-## The catalog
-
-There are about 100 sources in 14 categories plus 12 arXiv subcategories. All were verified live, and each one has a short description shown during onboarding.
-
-| Category | Examples |
+| | |
 |---|---|
-| Claude & Anthropic | claude.com articles, claude.dev blog, Anthropic news/research/engineering, Claude Code releases, MCP |
-| AI Lab Blogs | OpenAI, Google DeepMind, Google Research, Microsoft Research, Apple ML, NVIDIA, Hugging Face, PyTorch |
-| AI Engineering | Simon Willison, Latent Space, Eugene Yan, Hamel Husain, Sebastian Raschka, Interconnects, Import AI, Karpathy |
-| ML / AI Research | Daily AI papers (HF trending + TL;DR), BAIR, Lil'Log, Alignment Forum, Distill, plus arXiv cs.AI/LG/CL/CV/RO/MA/IR/NE/SE/DC/GR, stat.ML |
-| System Design | ByteByteGo, System Design Newsletter, Marc Brooker, Werner Vogels, Cloudflare, Netflix, Meta, Discord, Stripe, Fly.io, TigerBeetle… |
-| Game Dev — Getting Started | GameFromScratch, Red Blob Games, Gaffer On Games, How To Market A Game |
-| Game Engines / Industry / Graphics / Devlogs | Godot, Bevy, Unity, Unreal, Defold · Game Developer, GamesIndustry.biz, 80 Level · Aras P, MJP, Adrian Courrèges · Factorio FFF, RimWorld |
-| Rust / Other Languages | This Week in Rust, fasterthanlime, corrode, matklad, Niko Matsakis · C++, C#/.NET, Go, TypeScript, Python, Zig |
+| **Coach** | `/quest` and the `learning-quest` skill: kickoff → 10-minute reading and a 5-question quiz → 50-minute goal block → close and log |
+| **Goals** | A starter library (Rust Book, Math for ML, 3Blue1Brown, Zero to Hero, DDIA, System Design Primer, LLM From Scratch) or your own, broken into units with time estimates |
+| **Scheduler** | Fits units into study days at up to 50 minutes a day, shifts for leaves, flags a goal at risk and offers one gentle option |
+| **Game** | XP (minutes up to the cap, units, quiz points, new readings, streak bonus), levels, a streak that skips weekends and leave, badges |
+| **Feeds** | 36 curated feeds across ML, AI dev, system design, languages and news: one reading a day for that day's track, plus headlines |
+| **Notes** | `Learning/Quest Board.md`, `Learning/Sessions/`, your goal notes' checkboxes and progress logs, your learning log, and a "Today's Quest" section in your daily note |
 
-**Learning tracks** (roadmap + starter resources + progress): `rust`, `gamedev` (game dev foundations for experienced developers), `cpp`, `csharp`, `go`, `typescript`, `python`.
+Full docs: **[docs/](docs/README.md)** · [changelog](docs/CHANGELOG.md)
 
-## How it stays reliable
+## Develop
 
-- **Hard timeouts, retries, and backoff** on every fetch. Rate limits (429) and server errors are retried, and dead feeds aren't hammered.
-- **Broken-feed repair**: stray bytes before the XML and unescaped `&` are cleaned up automatically (this rescues the DeepMind and LangChain feeds).
-- **Cache on disk** (`.cache/`): if a site is down you still get its last articles, and items stay readable after they drop off the feed.
-- **Fallback URLs**: arXiv RSS is empty on weekends, so its search API fills in.
-- **Fast answers**: the reading list returns within about 8 seconds, and slow sources finish in the background.
-- **Sites without RSS** (Anthropic news/research/engineering) are read by scraping their article links.
-- **Configs store source ids, not URLs**, so when a site moves, fixing the catalog reaches everyone on `git pull`.
-- **Diverse reading list**: max 2 items per source by default, so arXiv's 400 papers a day don't take over. Articles on followed topics rank higher.
-
-Maintenance: `npm run verify-feeds` live-checks the whole catalog. In chat, *"check my feeds"* runs a health check on your subscriptions.
-
-## Gamification
-
-- **XP:** learning entry 10 base (+10 if >200 chars, +10 if >500, +5 per tag) · article read +5 · goal done +10
-- **Levels:** every 100 XP. Apprentice → Explorer → Scholar → Sage → Luminary → Polymath → Enlightened
-- **Streaks:** log something every day
-
-## Vault layout
-
+```bash
+npm install          # also installs the docs git hook
+npm run build        # TypeScript → dist/, and the plugin's bundled server
+npm test             # engine tests
+claude plugin test mods/learning-quest   # mod tests
+npm run verify-feeds # live-check the feed catalog
 ```
-YourVault/
-├── Learning/2026-11-20 - Rust ownership model.md
-├── Daily/2026-11-20.md
-└── .gamify-state.json     ← XP, streak, goals, read articles
-```
+
+Run the plugin from your working copy with `claude --plugin-dir mods/learning-quest`.

@@ -4,24 +4,30 @@ Newest first. One line per user-visible change, with a link to the feature page.
 
 ## Unreleased
 
-- [Daily reading list](features/daily-reading.md): new `plan_today` writes today's links into your Obsidian daily note (created from your template), and carries over unfinished links. The new **todays-reading** Claude Code mod shows the list in a pane (desktop) or band (terminal) in every session, and ticking there or in Obsidian earns read XP. Install it from this repo's marketplace (`prajwalkk/gamify-learning`).
-- [Daily goals](features/goals.md): goals now go in a section of your own daily note (`Daily Notes/`) instead of overwriting a separate `Daily/` note; new config `dailyNotesFolder`, `dailyTemplate`, `learningFolder`, `readingPerDay`.
-- Reading-list picks skip quote posts and bare release tags; tracking parameters are stripped from links.
-- Docs: per-feature pages in `docs/features/`, plus automatic checks (Claude Code Stop hook, git commit-msg hook, `npm run check-docs`) so every feature change updates its docs. See [docs/README.md](README.md#keeping-docs-current).
+## 1.0.0 — 2026-11-20 · Learning Quest
 
-## 0.3.0 — 2026-11-20
+A rebuild around the original Learning Quest design. It replaces the earlier gamify-learning feature set (its 112-source catalog, onboarding, language tracks and XP rules).
 
-- [Feed catalog](features/feed-catalog.md): about 100 verified sources in 14 categories plus 12 arXiv subcategories; Claude/Anthropic sources including scraped Anthropic news/research/engineering.
-- [Feed reliability](features/feed-reliability.md): timeouts, retries, XML repair, disk cache, merge-not-replace, fallback URLs, 8s response budget.
-- [Managing feeds](features/managing-feeds.md): `add_feed` auto-discovers feeds from homepages; new `follow_topic`, `watch_page`, `remove_feed`, `list_feeds`, `check_feeds`.
-- [Onboarding](features/onboarding.md): free-text interests, beginner-first suggestions, unmatched phrases offered as topics.
-- [Learning tracks](features/learning-tracks.md): added `gamedev`, `cpp`, `csharp`, `python` tracks with starter resources.
-- [Setup](features/setup.md): config is found relative to the install (fixes Claude Desktop), Windows/WSL vault paths are converted automatically, v0.2 configs migrate.
-- Fixes: completing a goal now actually awards its +10 XP; level-up detection fixed; unknown articles no longer earn read XP.
+- [Setup](features/setup.md): one plugin (`learning-quest`) bundles the coach, the MCP server, and the pane and status chip; install from this repo's marketplace. The notes folder comes from `LEARNING_QUEST_DIR` → `~/.config/learning-quest/config.json` → `~/LearningQuest`.
+- [The daily session](features/daily-session.md): `/quest` runs kickoff → reading and a 5-question quiz → goal block → close and log, under the coach rules.
+- [Goals, plan and leaves](features/goals-and-plan.md): goals with units and estimates, an 8-entry starter library, a scheduler that fills up to 50 minutes a day and recomputes from today, leaves that shift deadlines, risk with one gentle option, and rollover to the next queued goal.
+- [XP, streaks, levels and badges](features/game.md): 1 XP/min up to the cap, +25 per unit, +3 per quiz point, +10 per new reading, a streak bonus; a streak that skips weekends and leave; `floor(sqrt(xp/50)) + 1` levels; 8 badges.
+- [Daily reading and feeds](features/feeds.md): a 36-feed catalog with tracks, roles and volume; the day's reading by track (curated paper first, else rotation); headlines; a 20-hour cache. Fanout is pending its feed URL.
+- [Notes](features/notes.md): `Learning/.quest/` (state, news cache, lock, backups), a generated Quest Board and session notes, ticks and progress logs in your goal notes, your learning log, and a Today's Quest section in your daily note.
+- [Today's quest in Claude Code](features/claude-code-mod.md): a pane (desktop), band (terminal) and status chip in every session.
+- The `todays-reading` mod is replaced by `learning-quest`.
+
+## 0.4.0
+
+- Daily reading list written into the Obsidian daily note; `todays-reading` mod; goals section in the daily note.
+
+## 0.3.0
+
+- About 100 verified sources, robust fetching (timeouts, retries, XML repair, cache, fallbacks), feed management tools, free-text onboarding, learning tracks.
 
 ## 0.2.0
 
-- RSS reading list, onboarding by category, arXiv research feeds, Rust/TypeScript/Go language tracks.
+- RSS reading list, onboarding by category, arXiv feeds, language tracks.
 
 ## 0.1.0
 
