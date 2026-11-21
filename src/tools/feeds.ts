@@ -3,6 +3,7 @@ import { Config, saveConfig, slug, CustomFeed } from "../config.js";
 import { loadState, saveState, addXp } from "../state.js";
 import { findSourceByUrl, getSource, hasKeyword } from "../catalog.js";
 import { resolveFeed, fetchRss, scrapeLinks } from "../fetcher.js";
+import { tickReading } from "../daily-note.js";
 import { configuredSources, loadSources, findCachedItem, cachedHealth, itemDate, CachedItem } from "../feed-engine.js";
 
 const DAY = 864e5;
@@ -39,7 +40,7 @@ export async function getFeeds(cfg: Config, input: z.infer<typeof getFeedsSchema
   // Answer within ~8s; anything slower finishes in the background for next time
   const results = await loadSources(sources, input.refresh, 8000);
   const state = loadState(cfg.vaultPath, cfg.username);
-  const read = new Set(state.readArticles.map((r) => r.guid));
+  const read = new Set(state.readArticles.flatMap((r) => [r.guid, r.link].filter(Boolean) as string[]));
   const cutoff = input.days ? Date.now() - input.days * DAY : 0;
   const q = input.query?.toLowerCase();
 
@@ -48,7 +49,8 @@ export async function getFeeds(cfg: Config, input: z.infer<typeof getFeedsSchema
   const perSource: Cand[][] = results.map((r) => {
     const out: Cand[] = [];
     for (const item of r.items) {
-      if (!input.includeRead && read.has(item.guid)) continue;
+      const isRead = read.has(item.guid) || (!!item.link && read.has(item.link));
+      if (!input.includeRead && isRead) continue;
       if (itemDate(item) < cutoff) continue;
       const text = `${item.title} ${item.summary}`;
       if (q && !text.toLowerCase().includes(q)) continue;
@@ -75,7 +77,7 @@ export async function getFeeds(cfg: Config, input: z.infer<typeof getFeedsSchema
       date: isoDay(item.date) ?? "undated",
       summary: item.summary ? item.summary.slice(0, 220) + (item.summary.length > 220 ? "…" : "") : undefined,
       matchesYourTopics: matches.length ? matches : undefined,
-      read: read.has(item.guid) || undefined,
+      read: read.has(item.guid) || (!!item.link && read.has(item.link)) || undefined,
     }));
 
   const failing = results
@@ -111,10 +113,20 @@ export async function markArticleRead(cfg: Config, input: z.infer<typeof markRea
     return { message: "I don't recognize that article — pass the guid exactly as get_feeds returned it, or include its title to log an article from elsewhere." };
   }
   const guid = hit?.item.guid ?? input.guid;
-  if (state.readArticles.some((r) => r.guid === guid)) return { message: "Already marked as read." };
+  const link = hit?.item.link || (/^https?:/.test(input.guid) ? input.guid : undefined);
+  // Tick it in today's (or a recent) Obsidian reading list too
+  if (link) {
+    try {
+      tickReading(cfg, link);
+    } catch {
+      /* the vault may not have daily notes */
+    }
+  }
+  if (state.readArticles.some((r) => r.guid === guid || (link && r.link === link))) return { message: "Already marked as read." };
 
   state.readArticles.push({
     guid,
+    link,
     title: input.title ?? hit?.item.title ?? guid,
     feedName: input.feedName ?? (hit ? getSource(hit.sourceId)?.name ?? hit.sourceId : "unknown"),
     readAt: new Date().toISOString(),

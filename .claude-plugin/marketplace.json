@@ -1,0 +1,11 @@
+{
+  "name": "gamify-learning",
+  "owner": { "name": "prajwalkk" },
+  "plugins": [
+    {
+      "name": "todays-reading",
+      "source": "./mods/todays-reading",
+      "description": "Today's reading list from your Obsidian daily note, beside every Claude Code session"
+    }
+  ]
+}

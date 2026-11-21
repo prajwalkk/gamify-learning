@@ -79,6 +79,18 @@ export function stripHtml(s: string): string {
     .trim();
 }
 
+/** Drop utm_* and similar tracking parameters from article links. */
+export function stripTracking(link: string): string {
+  if (!/[?&](utm_|fbclid=|gclid=|mc_)/.test(link)) return link;
+  try {
+    const u = new URL(link);
+    for (const k of [...u.searchParams.keys()]) if (/^(utm_|fbclid$|gclid$|mc_)/.test(k)) u.searchParams.delete(k);
+    return u.toString().replace(/\?$/, "");
+  } catch {
+    return link;
+  }
+}
+
 function parseDate(...candidates: (string | undefined)[]): number | undefined {
   for (const c of candidates) {
     if (!c) continue;
@@ -108,7 +120,7 @@ function toItems(feed: Awaited<ReturnType<typeof parseXml>>): RawItem[] {
     // arXiv RSS: drop re-announcements of old papers, strip the boilerplate prefix
     if (/Announce Type:\s*replace/i.test(raw)) continue;
     const summary = stripHtml(raw).replace(/^arXiv:\S+\s+Announce Type:\s*\S+\s*Abstract:\s*/i, "");
-    const link = item.link ?? "";
+    const link = stripTracking(item.link ?? "");
     const title = stripHtml(item.title ?? "") || "(untitled)";
     out.push({
       guid: item.guid || link || title,

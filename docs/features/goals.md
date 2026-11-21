@@ -1,6 +1,6 @@
 # Daily goals
 
-Set learning goals for the day, tick them off for XP, and get an Obsidian daily note with your goals, stats and recent learning.
+Set learning goals for the day, tick them off for XP, and see them in your own Obsidian daily note, with your stats and recent learning.
 
 ## Using it
 
@@ -18,11 +18,11 @@ Set learning goals for the day, tick them off for XP, and get an Obsidian daily 
 
 ## How it works
 
-- Code: `src/tools/goals.ts`, `src/obsidian.ts` (`writeDailyNote`)
-- **Daily note:** `<vault>/Daily/YYYY-MM-DD.md` with level, XP, streak, the goal checklist (`- [x]`), and the last 5 learning entries. It's regenerated each time `get_goals` runs.
+- Code: `src/tools/goals.ts`, `src/obsidian.ts` (`writeGoalsSection`), `src/daily-note.ts`
+- **Daily note:** a `## 🎯 Learning Goals` section in *your* daily note, `<vault>/<dailyNotesFolder>/YYYY-MM-DD.md` (default `Daily Notes/`), with level, XP, streak, the goal checklist and the last 5 learning entries. If the note doesn't exist it's created from your template. Only that section is rewritten each time `get_goals` runs; the rest of the note is never touched (see [Daily reading list](daily-reading.md#in-obsidian)).
 - "Today" means goals created today; unfinished goals don't carry over.
 
 ## Limitations
 
-- The daily note is only written by `get_goals`, not after each goal change.
-- Dates use UTC.
+- The goals section is only rewritten by `get_goals`, not after each goal change.
+- Goals count as "today" by local date.

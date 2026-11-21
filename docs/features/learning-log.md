@@ -18,7 +18,7 @@ Tell Claude what you learned. It's saved as a note in your Obsidian vault and ea
 ## How it works
 
 - Code: `src/tools/learning.ts`, `src/obsidian.ts` (`writeLearningNote`), `src/state.ts`
-- **Note:** `<vault>/Learning/YYYY-MM-DD - <topic>.md` with frontmatter (`date`, `tags`, `xp`), the content, an optional **Source:** line, and `#tags`.
+- **Note:** `<vault>/<learningFolder>/YYYY-MM-DD - <topic>.md` (default `Learning/`) with frontmatter (`date`, `tags`, `xp`), the content, an optional **Source:** line, and `#tags`.
 - **XP:** 10 base, +10 if content is over 200 characters, +10 more if over 500, +5 per tag. The reply announces level-ups.
 - Updates the daily streak (see [Gamification](gamification.md)). Entries are also stored in `.gamify-state.json` → `entries`.
 

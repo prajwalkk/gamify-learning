@@ -10,6 +10,7 @@ These docs are kept in step with the code automatically. See [Keeping docs curre
 |---|---|---|
 | [Setup & connecting](features/setup.md) | Install, connect to Claude Code / Claude Desktop, config file | — |
 | [Onboarding](features/onboarding.md) | "Set me up": describe interests in your own words, get feeds picked for you | `get_categories`, `suggest_feeds`, `setup_interests` |
+| [Daily reading list](features/daily-reading.md) | Today's links in your Obsidian daily note, shown beside every Claude Code session by the todays-reading mod | `plan_today` |
 | [Reading list](features/reading-list.md) | "What should I read?" plus marking articles read for XP | `get_feeds`, `mark_article_read` |
 | [Managing feeds](features/managing-feeds.md) | Add blogs, follow any topic, watch sites without RSS, remove, health-check | `add_feed`, `watch_page`, `follow_topic`, `remove_feed`, `list_feeds`, `check_feeds` |
 | [Feed catalog](features/feed-catalog.md) | The ~100 curated sources, categories, arXiv, how to add a source | — |

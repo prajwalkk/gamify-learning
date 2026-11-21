@@ -42,7 +42,7 @@ export async function logLearning(cfg: Config, input: z.infer<typeof logLearning
   state.entries.push(entry);
 
   saveState(cfg.vaultPath, state);
-  const notePath = writeLearningNote(cfg.vaultPath, entry);
+  const notePath = writeLearningNote(cfg, entry);
 
   const leveledUp = state.level > levelFromXp(state.xp - xp);
 

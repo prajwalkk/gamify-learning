@@ -4,6 +4,9 @@ Newest first. One line per user-visible change, with a link to the feature page.
 
 ## Unreleased
 
+- [Daily reading list](features/daily-reading.md): new `plan_today` writes today's links into your Obsidian daily note (created from your template), and carries over unfinished links. The new **todays-reading** Claude Code mod shows the list in a pane (desktop) or band (terminal) in every session, and ticking there or in Obsidian earns read XP. Install it from this repo's marketplace (`prajwalkk/gamify-learning`).
+- [Daily goals](features/goals.md): goals now go in a section of your own daily note (`Daily Notes/`) instead of overwriting a separate `Daily/` note; new config `dailyNotesFolder`, `dailyTemplate`, `learningFolder`, `readingPerDay`.
+- Reading-list picks skip quote posts and bare release tags; tracking parameters are stripped from links.
 - Docs: per-feature pages in `docs/features/`, plus automatic checks (Claude Code Stop hook, git commit-msg hook, `npm run check-docs`) so every feature change updates its docs. See [docs/README.md](README.md#keeping-docs-current).
 
 ## 0.3.0 — 2026-11-20

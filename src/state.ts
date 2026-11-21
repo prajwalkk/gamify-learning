@@ -20,6 +20,7 @@ export interface LearningEntry {
 
 export interface ReadArticle {
   guid: string;
+  link?: string;
   title: string;
   feedName: string;
   readAt: string;

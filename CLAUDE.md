@@ -28,7 +28,12 @@ This is enforced by `scripts/check-docs.mjs`:
 - `src/index.ts`: server, MCP `instructions`, tool registration via `tool(name, description, schema, fn)`
 - `src/catalog.ts`: sources, categories, arXiv, topic hints, learning tracks
 - `src/fetcher.ts` / `src/feed-engine.ts`: robust fetching, parsing, scraping, cache
+- `src/daily-note.ts`: the user's Obsidian daily notes (template rendering, our sections, reading-list parsing, carry-over). The **todays-reading** mod parses the same `## 📚 Today's Reading` format: change both together
 - `src/tools/*.ts`: tool implementations · `src/state.ts`: XP/streak state in `<vault>/.gamify-state.json` · `src/obsidian.ts`: note writing · `src/config.ts`: config loading and migration
+
+## The todays-reading mod
+
+`mods/todays-reading/` is a Claude Code mod (hooks module, not part of the npm build), published through `.claude-plugin/marketplace.json` at the repo root. Edit it here; test with `claude plugin validate mods/todays-reading` and `claude plugin test mods/todays-reading`, or run it with `claude --plugin-dir mods/todays-reading`. Bump its `plugin.json` version for every change people should receive.
 
 ## Conventions and gotchas
 

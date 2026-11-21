@@ -1,6 +1,7 @@
 import { z } from "zod/v3";
 import { loadState, saveState, addXp, Goal } from "../state.js";
-import { writeDailyNote } from "../obsidian.js";
+import { writeGoalsSection } from "../obsidian.js";
+import { localDay } from "../daily-note.js";
 import { Config } from "../config.js";
 
 function makeId() {
@@ -45,18 +46,10 @@ export async function completeGoal(cfg: Config, input: z.infer<typeof completeGo
 
 export async function getGoals(cfg: Config) {
   const state = loadState(cfg.vaultPath, cfg.username);
-  const today = new Date().toISOString().slice(0, 10);
-  const todayGoals = state.goals.filter((g) => g.createdAt.startsWith(today));
+  const today = localDay();
+  const todayGoals = state.goals.filter((g) => localDay(new Date(g.createdAt)) === today);
 
-  const notePath = writeDailyNote(
-    cfg.vaultPath,
-    state.username,
-    state.xp,
-    state.level,
-    state.streak,
-    todayGoals,
-    state.entries
-  );
+  const notePath = writeGoalsSection(cfg, state, todayGoals, state.entries);
 
   return {
     goals: todayGoals,

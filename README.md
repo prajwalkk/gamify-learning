@@ -47,6 +47,13 @@ Restart the app.
 claude mcp add gamify-learning --scope user -- node /path/to/gamify-learning/dist/index.js
 ```
 
+### Add the todays-reading mod (today's links beside every session)
+
+- **Claude Code desktop:** **+** next to the prompt box → **Plugins** → **Add marketplace** `prajwalkk/gamify-learning` → **Add plugin**
+- **Terminal:** `/plugin install todays-reading --marketplace prajwalkk/gamify-learning`
+
+See [daily reading list](docs/features/daily-reading.md).
+
 ## First run
 
 Say **"set me up"**. Claude asks what you want to learn, in your own words, and suggests feeds from the catalog. You can add anything else too:

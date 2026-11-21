@@ -12,9 +12,14 @@ import {
 } from "./tools/feeds.js";
 import { getCategories, suggestFeeds, suggestFeedsSchema, setupInterests, setupInterestsSchema } from "./tools/onboard.js";
 import { getLanguageTrack, setLanguageTrack, setLanguageTrackSchema } from "./tools/language.js";
+import { planToday, planTodaySchema } from "./tools/reading.js";
+import { READING_HEADING } from "./daily-note.js";
+import fs from "fs";
+import os from "os";
+import path from "path";
 
 const cfg = loadConfig();
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 
 const server = new McpServer(
   { name: "gamify-learning", version: VERSION },
@@ -24,7 +29,8 @@ const server = new McpServer(
       "First run: if the user has no feeds (get_categories → onboarded: false), offer a short, conversational onboarding:",
       "ask what they want to learn in their own words, call suggest_feeds with those words, confirm picks, ask about any extra topics or blogs,",
       "then setup_interests. Unmatched topics → follow_topic; blog URLs → add_feed (auto-discovers RSS).",
-      "Daily use: get_dashboard + get_feeds for a reading list; when they finish an article, mark_article_read; when they explain something they learned, log_learning (tags matter for tracks).",
+      "Each day's reading list lives in the user's Obsidian daily note (shown in Claude Code by the todays-reading mod): when they ask what to read today, or it isn't planned yet, call plan_today.",
+      "Daily use: get_dashboard + get_feeds for more reading; when they finish an article, mark_article_read; when they explain something they learned, log_learning (tags matter for tracks).",
       "Keep feed lists short and readable: title, source, one-line why. Never dump raw JSON at the user.",
     ].join(" "),
   }
@@ -59,6 +65,7 @@ tool("get_stats", "Full stats: XP, level, streak, articles read, total entries",
 
 // ── Reading ───────────────────────────────────────────────────────────────────
 tool("get_feeds", "Reading list from subscribed feeds: newest first, capped per source, articles on followed topics ranked up. Filter by category, source, keyword, or days.", getFeedsSchema, (i) => getFeeds(cfg, i));
+tool("plan_today", "Plan today's reading list into the user's Obsidian daily note (📚 Today's Reading). Carries over yesterday's unread links if that list isn't finished; otherwise picks fresh ones. Returns the existing list if today is already planned.", planTodaySchema, (i) => planToday(cfg, i));
 tool("mark_article_read", "Mark an article read (+5 XP)", markReadSchema, (i) => markArticleRead(cfg, i));
 tool("add_feed", "Subscribe to a blog — accepts a feed URL or just the homepage (RSS is auto-discovered and tested before saving)", addFeedSchema, (i) => addFeed(cfg, i));
 tool("watch_page", "Follow a site that has no RSS by scraping article links from a listing page", watchPageSchema, (i) => watchPage(cfg, i));
@@ -76,7 +83,29 @@ tool("setup_interests", "Apply onboarding choices: categories, individual source
 tool("get_language_track", "Roadmap and progress for the current learning track (Rust, game dev, C++, C#, Go, TS, Python)", noArgs, () => getLanguageTrack(cfg));
 tool("set_language_track", "Choose a learning track — adds its feeds and starter resources", setLanguageTrackSchema, (i) => setLanguageTrack(cfg, i));
 
+/**
+ * Tell the todays-reading mod where this machine's vault is: ~/.claude/gamify-learning.json.
+ * Written in this platform's path form, so the Windows app and WSL each get their own.
+ */
+function writeVaultPointer() {
+  try {
+    const dir = path.join(os.homedir(), ".claude");
+    fs.mkdirSync(dir, { recursive: true });
+    const pointer = {
+      vaultPath: path.resolve(cfg.vaultPath),
+      dailyNotesFolder: cfg.dailyNotesFolder,
+      readingHeading: READING_HEADING,
+      username: cfg.username,
+      writtenBy: `gamify-learning ${VERSION}`,
+    };
+    fs.writeFileSync(path.join(dir, "gamify-learning.json"), JSON.stringify(pointer, null, 2) + "\n");
+  } catch (e) {
+    console.error("gamify-learning: could not write vault pointer:", (e as Error).message);
+  }
+}
+
 async function main() {
+  writeVaultPointer();
   await server.connect(new StdioServerTransport());
   console.error(`gamify-learning MCP v${VERSION} running for ${cfg.username}`);
 }

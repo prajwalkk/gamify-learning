@@ -26,6 +26,14 @@ export interface Config {
   /** Category ids chosen during onboarding */
   interests: string[];
   languageTrack?: string;
+  /** Folder (inside the vault) holding YYYY-MM-DD.md daily notes */
+  dailyNotesFolder: string;
+  /** Daily note template (inside the vault) used when today's note doesn't exist yet */
+  dailyTemplate: string;
+  /** Folder (inside the vault) for learning-log notes */
+  learningFolder: string;
+  /** Links in a planned day's reading list */
+  readingPerDay: number;
 }
 
 // Resolve config next to the package (dist/../config.json), NOT process.cwd():
@@ -70,6 +78,10 @@ export function loadConfig(): Config {
     topics: raw.topics ?? [],
     interests: raw.interests ?? [],
     languageTrack: raw.languageTrack || undefined,
+    dailyNotesFolder: raw.dailyNotesFolder ?? "Daily Notes",
+    dailyTemplate: raw.dailyTemplate ?? "Templates/Daily Note Template.md",
+    learningFolder: raw.learningFolder ?? "Learning",
+    readingPerDay: raw.readingPerDay ?? 5,
   };
 
   // Migrate v0.2 configs ("feeds": [{url,name,category}]) to catalog ids

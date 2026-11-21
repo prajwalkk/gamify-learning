@@ -14,7 +14,7 @@ Your personal reading list from every feed you follow: newest first, mixed acros
 | Tool | What it does | Key inputs |
 |---|---|---|
 | `get_feeds` | Builds the reading list | `category`, `source`, `query` (keyword), `days`, `limit` (15), `perSource` (2), `includeRead` (false), `refresh` |
-| `mark_article_read` | Marks an article read, +5 XP | `guid` from `get_feeds` (or its link); `title` only needed for articles from elsewhere |
+| `mark_article_read` | Marks an article read, +5 XP, and ticks it in your [daily reading list](daily-reading.md) if it's there | `guid` from `get_feeds` (or its link); `title` only needed for articles from elsewhere |
 
 ## How it works
 

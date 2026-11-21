@@ -1,5 +1,7 @@
 import { loadState } from "../state.js";
 import { Config } from "../config.js";
+import { syncReadingXp } from "./reading.js";
+import { currentReading } from "../daily-note.js";
 
 const LEVEL_TITLES: Record<number, string> = {
   1: "Apprentice",
@@ -22,6 +24,8 @@ function titleForLevel(level: number): string {
 }
 
 export async function getDashboard(cfg: Config) {
+  const synced = syncReadingXp(cfg);
+  const reading = currentReading(cfg);
   const state = loadState(cfg.vaultPath, cfg.username);
   const today = new Date().toISOString().slice(0, 10);
   const todayEntries = state.entries.filter((e) => e.createdAt.startsWith(today));
@@ -40,6 +44,10 @@ export async function getDashboard(cfg: Config) {
     goalsToday: { done: todayGoals.filter((g) => g.done).length, total: todayGoals.length },
     articlesReadTotal: state.readArticles?.length ?? 0,
     onboarded: cfg.sources.length + cfg.customFeeds.length > 0,
+    todaysReading: reading
+      ? `${reading.items.filter((i) => i.done).length}/${reading.items.length} read${reading.carriedFrom ? ` (carried over from ${reading.carriedFrom})` : ""}`
+      : "not planned yet — call plan_today",
+    xpFromTicks: synced.xpGained ? `+${synced.xpGained} XP for ${synced.newlyRead.length} ticked in Obsidian` : undefined,
     languageTrack: cfg.languageTrack,
   };
 }
